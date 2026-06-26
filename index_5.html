@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Le réflexe Klaro — prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15202B; --paper:#FAF8F3; --card:#FFFFFF;
+    --blue:#1F4EF5; --blue-deep:#1338BC; --blue-wash:#E9EEFF;
+    --gain:#0E9F6E; --gain-wash:#E2F5EC;
+    --muted:#5B6B79; --line:#E7E2D7;
+    --shadow:0 1px 2px rgba(21,32,43,.06), 0 12px 40px -12px rgba(21,32,43,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"Instrument Sans",system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;padding:20px 16px 48px;display:flex;justify-content:center}
+  .app{width:100%;max-width:440px}
+  .display{font-family:"Bricolage Grotesque",sans-serif;letter-spacing:-.02em;line-height:1.05}
+
+  .brand{display:flex;align-items:center;gap:9px;margin-bottom:22px}
+  .logo{width:30px;height:30px;border-radius:9px;background:var(--blue);position:relative;flex:0 0 auto}
+  .logo::after{content:"";position:absolute;inset:9px 9px auto auto;width:8px;height:8px;border-radius:50%;background:#fff}
+  .brand b{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:19px;letter-spacing:-.03em}
+  .brand span{margin-left:auto;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:#fff;border:1px solid var(--line);padding:4px 8px;border-radius:99px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+  .pad{padding:24px 22px}
+
+  .eyebrow{font-size:12px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+  h1{font-size:29px;font-weight:800;margin-bottom:10px}
+  h2{font-size:23px;font-weight:700;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:15px}
+
+  .steps{display:flex;gap:5px;padding:0 22px 18px}
+  .steps i{height:4px;flex:1;border-radius:99px;background:var(--line);transition:background .35s}
+  .steps i.on{background:var(--blue)}
+
+  .opts{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+  .opt{display:flex;align-items:center;gap:13px;width:100%;text-align:left;cursor:pointer;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 15px;font:inherit;color:var(--ink);transition:border-color .15s,background .15s,transform .05s}
+  .opt:hover{border-color:var(--blue);background:var(--blue-wash)}
+  .opt:active{transform:scale(.99)}
+  .opt:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+  .opt .ico{font-size:21px;width:26px;text-align:center;flex:0 0 auto}
+  .opt .lab{font-weight:600;font-size:15.5px}
+  .opt .hint{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--blue);color:#fff;border:none;border-radius:14px;padding:16px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;transition:background .15s,transform .05s}
+  .btn:hover{background:var(--blue-deep)}
+  .btn:active{transform:scale(.99)}
+  .btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+  .btn.ghost{background:#fff;color:var(--blue);border:1.5px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--blue);background:var(--blue-wash)}
+
+  .headline{padding:26px 22px 20px;background:linear-gradient(180deg,var(--blue-wash),#fff)}
+  .bignum{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:46px;letter-spacing:-.03em;color:var(--blue-deep);line-height:1}
+  .bignum small{font-size:20px;font-weight:700}
+  .headline .sub{margin-top:8px}
+
+  .curve-wrap{padding:6px 22px 4px}
+  .curve-title{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--muted);font-weight:500;margin-bottom:6px}
+  svg.curve{width:100%;height:96px;display:block;overflow:visible}
+  .curve-path{fill:none;stroke:var(--gain);stroke-width:2.5;stroke-linecap:round}
+  .curve-area{fill:url(#g)}
+  .dot{fill:var(--gain)}
+
+  .aids{padding:8px 22px 4px}
+  .aid{display:flex;gap:13px;padding:15px 0;border-top:1px solid var(--line)}
+  .aid:first-child{border-top:none}
+  .aid .ai{width:38px;height:38px;border-radius:11px;background:var(--gain-wash);display:flex;align-items:center;justify-content:center;font-size:19px;flex:0 0 auto}
+  .aid .body{flex:1;min-width:0}
+  .aid .nm{font-weight:600;font-size:15px}
+  .aid .ds{font-size:13px;color:var(--muted)}
+  .aid .amt{font-weight:700;font-size:15px;color:var(--gain);white-space:nowrap}
+  .next{font-size:12px;font-weight:600;color:var(--blue);margin-top:5px;display:inline-flex;align-items:center;gap:5px}
+
+  .insight{margin:14px 22px 0;background:var(--ink);color:#fff;border-radius:16px;padding:17px 18px}
+  .insight b{font-family:"Bricolage Grotesque",sans-serif;font-size:14px;display:block;margin-bottom:5px}
+  .insight p{font-size:13.5px;color:#C6D0DA;line-height:1.5}
+  .insight p strong{color:#fff}
+
+  .why-link{padding:16px 22px 22px}
+  .foot{font-size:11.5px;color:var(--muted);text-align:center;padding:16px 22px 24px;line-height:1.5}
+  .restart{background:none;border:none;color:var(--blue);font:inherit;font-weight:600;font-size:13px;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+
+  /* Rationale page */
+  .back{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--muted);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:0;margin-bottom:16px}
+  .back:hover{color:var(--blue)}
+  .r-block{margin-top:22px}
+  .r-block .rh{display:flex;align-items:baseline;gap:9px;margin-bottom:9px}
+  .r-block .num{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:13px;color:var(--blue);flex:0 0 auto}
+  .r-block .rt{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:16px}
+  .r-block p{font-size:14px;color:#37434F;line-height:1.55}
+  .r-list{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:9px}
+  .r-list li{font-size:13.5px;color:#37434F;line-height:1.5;padding-left:16px;position:relative}
+  .r-list li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--gain)}
+  .r-list li b{color:var(--ink);font-weight:600}
+  .stack{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .chip{font-size:12px;font-weight:600;color:var(--blue-deep);background:var(--blue-wash);border-radius:99px;padding:5px 11px}
+  .note{margin-top:26px;border-top:1px solid var(--line);padding-top:20px}
+  .note .nlab{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+  .note p{font-size:14.5px;color:var(--ink);line-height:1.6}
+  .sig{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;margin-top:10px;font-size:16px}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand">
+    <div class="logo" aria-hidden="true"></div>
+    <b>Klaro</b>
+    <span id="tag">Prototype</span>
+  </div>
+  <div class="card" id="card"></div>
+  <p class="foot" id="gfoot">Prototype indépendant. Montants illustratifs, non contractuels.</p>
+</div>
+
+<script>
+(function(){
+  const card = document.getElementById('card');
+  const tag = document.getElementById('tag');
+  const gfoot = document.getElementById('gfoot');
+
+  const Q = [
+    { eb:"1 sur 4 — Logement", q:"Votre logement, c'est…",
+      a:[{ico:"🔑",lab:"Locataire",hint:"parc privé ou social",tag:"loc"},
+         {ico:"🏠",lab:"Propriétaire",hint:"avec un prêt en cours",tag:"prop"},
+         {ico:"🛏️",lab:"Hébergé",hint:"famille, colocation",tag:"heb"}]},
+    { eb:"2 sur 4 — Famille", q:"Des enfants à charge ?",
+      a:[{ico:"👶",lab:"Oui, au moins un",hint:"",tag:"enf"},
+         {ico:"🙂",lab:"Pas d'enfant",hint:"",tag:"noenf"}]},
+    { eb:"3 sur 4 — Trajets", q:"Pour aller travailler…",
+      a:[{ico:"🚗",lab:"Voiture",hint:"trajets quotidiens",tag:"car"},
+         {ico:"🚌",lab:"Transports en commun",hint:"abonnement",tag:"tc"},
+         {ico:"🚲",lab:"Vélo / à pied",hint:"",tag:"velo"}]},
+    { eb:"4 sur 4 — Revenu du foyer", q:"Niveau de revenu net du foyer",
+      a:[{ico:"📉",lab:"Modeste",hint:"sous ~1,8 SMIC",tag:"bas"},
+         {ico:"📊",lab:"Intermédiaire",hint:"~1,8 à 3 SMIC",tag:"moy"},
+         {ico:"📈",lab:"Confortable",hint:"au-delà",tag:"haut"}]},
+  ];
+
+  const AIDS = [
+    {nm:"Aide personnalisée au logement (APL)", ds:"Caisse d'allocations familiales", m:172, need:["loc"], boost:{bas:1.25,moy:.6,haut:0}},
+    {nm:"Chèque énergie", ds:"Réduction sur la facture d'énergie", m:23, need:[], boost:{bas:1.3,moy:.5,haut:0}},
+    {nm:"Prime d'activité", ds:"Complément de revenu", m:158, need:[], boost:{bas:1.4,moy:.4,haut:0}},
+    {nm:"Allocations familiales", ds:"Versées dès 2 enfants à charge", m:141, need:["enf"], boost:{bas:1,moy:1,haut:.7}},
+    {nm:"Forfait mobilités durables", ds:"Prise en charge employeur", m:42, need:["velo"], boost:{bas:1,moy:1,haut:1}},
+    {nm:"Remboursement transport", ds:"50 % de l'abonnement par l'employeur", m:38, need:["tc"], boost:{bas:1,moy:1,haut:1}},
+    {nm:"Indemnité carburant", ds:"Aide aux trajets domicile-travail", m:31, need:["car"], boost:{bas:1.2,moy:.6,haut:0}},
+    {nm:"Aide à l'accession", ds:"Prêt et primes propriétaires", m:64, need:["prop"], boost:{bas:1,moy:.7,haut:.3}},
+  ];
+
+  const answers = {}; let step = 0;
+  const euro = n => new Intl.NumberFormat('fr-FR').format(Math.round(n));
+  function setTag(t){ tag.textContent = t; }
+
+  function render(){ if(step < Q.length) renderQuestion(); else renderResult(); }
+
+  function stepsBar(a){ let s='<div class="steps" aria-hidden="true">'; for(let i=0;i<Q.length;i++) s+='<i class="'+(i<=a?'on':'')+'"></i>'; return s+'</div>'; }
+
+  function intro(){
+    setTag('Prototype'); gfoot.style.display='';
+    card.innerHTML =
+      '<div class="pad">'+
+        '<div class="eyebrow">Pouvoir d\'achat</div>'+
+        '<h1 class="display">L\'argent qui vous attend, en 4 questions.</h1>'+
+        '<p class="sub">Chaque foyer passe à côté d\'environ 1 300 € d\'aides par an. Souvent faute d\'information, pas faute d\'y avoir droit. Voyons ce qui vous revient.</p>'+
+        '<div class="opts"><button class="btn" id="go">Commencer · 30 secondes</button></div>'+
+      '</div>';
+    document.getElementById('go').onclick = ()=>{ step=0; render(); };
+  }
+
+  function renderQuestion(){
+    setTag('Démo'); gfoot.style.display='';
+    const cur = Q[step];
+    let h = stepsBar(step) + '<div class="pad" style="padding-top:4px"><div class="eyebrow">'+cur.eb+'</div><h2 class="display">'+cur.q+'</h2><div class="opts" role="group">';
+    cur.a.forEach(o=>{ h+='<button class="opt" data-tag="'+o.tag+'"><span class="ico" aria-hidden="true">'+o.ico+'</span><span class="lab">'+o.lab+(o.hint?'<span class="hint">'+o.hint+'</span>':'')+'</span></button>'; });
+    h += '</div></div>';
+    card.innerHTML = h;
+    card.querySelectorAll('.opt').forEach(b=>{ b.onclick=()=>{ answers['q'+step]=b.dataset.tag; step++; render(); }; });
+    const f = card.querySelector('.opt'); if(f) f.focus();
+  }
+
+  function computeAids(){
+    const tags = Object.values(answers), income = answers.q3 || 'moy', out=[];
+    AIDS.forEach(a=>{
+      if(!a.need.every(t=>tags.includes(t))) return;
+      const factor = a.boost[income]!==undefined ? a.boost[income] : 1;
+      if(factor<=0) return;
+      const m = a.m*factor; if(m<8) return;
+      out.push({nm:a.nm, ds:a.ds, m:m});
+    });
+    out.sort((x,y)=>y.m-x.m); return out.slice(0,4);
+  }
+
+  function renderResult(){
+    setTag('Démo'); gfoot.style.display='';
+    const aids = computeAids();
+    const monthly = aids.reduce((s,a)=>s+a.m,0), annual = monthly*12;
+    const W=380,H=80,pts=[];
+    for(let i=0;i<=12;i++){ pts.push([(i/12)*W, H-(i/12)*H*0.92-4]); }
+    const line = pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const area = 'M0 '+H+' '+line.replace('M','L')+' L'+W+' '+H+' Z';
+    const last = pts[pts.length-1];
+
+    let h =
+      '<div class="headline"><div class="eyebrow">Estimation pour votre foyer</div><div class="bignum">'+euro(annual)+'<small> € / an</small></div><p class="sub">soit environ <b>'+euro(monthly)+' € par mois</b> qui vous reviennent.</p></div>'+
+      '<div class="curve-wrap"><div class="curve-title"><span>Ce que vous récupérez sur 12 mois</span><span>'+euro(annual)+' €</span></div>'+
+      '<svg class="curve" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0E9F6E" stop-opacity=".22"/><stop offset="100%" stop-color="#0E9F6E" stop-opacity="0"/></linearGradient></defs><path class="curve-area" d="'+area+'"/><path class="curve-path" id="cp" d="'+line+'"/><circle class="dot" cx="'+last[0]+'" cy="'+last[1]+'" r="4"/></svg></div>'+
+      '<div class="aids">';
+    aids.forEach((a,i)=>{ h+='<div class="aid"><div class="ai" aria-hidden="true">'+['🏡','⚡','💶','👨‍👩‍👧'][i%4]+'</div><div class="body"><div class="nm">'+a.nm+'</div><div class="ds">'+a.ds+'</div>'+(i===0?'<span class="next">→ Prochaine étape : monter le dossier en 4 min</span>':'')+'</div><div class="amt">+'+euro(a.m)+' €/mois</div></div>'; });
+    h += '</div>'+
+      '<div class="insight"><b>Le vrai sujet n\'est pas de connaître l\'aide.</b><p>Identifier une aide ne sert à rien si la démarche n\'aboutit pas. Le levier produit est <strong>le passage à l\'action</strong> : une seule prochaine étape claire à la fois, plutôt qu\'une liste de '+aids.length+' droits qui décourage.</p></div>'+
+      '<div class="why-link"><button class="btn ghost" id="why">Pourquoi j\'ai conçu ce prototype →</button></div>'+
+      '<div class="foot">Montants illustratifs. <button class="restart" id="rs">Refaire le test</button></div>';
+    card.innerHTML = h;
+    document.getElementById('rs').onclick = ()=>{ for(let k in answers) delete answers[k]; step=0; render(); };
+    document.getElementById('why').onclick = ()=>{ renderRationale(); window.scrollTo({top:0,behavior:'smooth'}); };
+
+    try{
+      const path = document.getElementById('cp');
+      if(path && path.getTotalLength && !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        const len = path.getTotalLength();
+        path.style.strokeDasharray = len; path.style.strokeDashoffset = len;
+        path.getBoundingClientRect();
+        path.style.transition = 'stroke-dashoffset 1.1s ease-out';
+        path.style.strokeDashoffset = '0';
+      }
+    }catch(e){}
+  }
+
+  function renderRationale(){
+    setTag('La réflexion'); gfoot.style.display='none';
+    card.innerHTML =
+      '<div class="pad">'+
+        '<button class="back" id="bk">← Revenir à la démo</button>'+
+        '<div class="eyebrow">La réflexion derrière</div>'+
+        '<h1 class="display">Pourquoi ce prototype.</h1>'+
+        '<p class="sub" style="margin-top:8px">Ce n\'est pas un produit fini, et ce n\'est pas censé l\'être. C\'est une façon de vous montrer comment je réfléchis produit, sur votre terrain plutôt que dans le vide.</p>'+
+
+        '<div class="r-block"><div class="rh"><span class="num">01</span><span class="rt">Le problème que j\'ai visé</span></div>'+
+        '<p>Klaro a déjà le plus grand simulateur d\'aides de France. Le « job » de l\'utilisateur n\'est donc pas de <b>connaître</b> ses droits, c\'est de les <b>toucher</b>. Et c\'est là que tout se joue. Dans une analyse récente, j\'ai découvert qu\'un mécanisme de relance, censé pousser les gens à agir, était en réalité corrélé à l\'échec plutôt qu\'au succès. Autrement dit : relancer ne suffit pas, et peut même desservir. Le vrai levier produit, ce n\'est ni l\'information ni le rappel, c\'est de rendre la prochaine action évidente et atteignable.</p></div>'+
+
+        '<div class="r-block"><div class="rh"><span class="num">02</span><span class="rt">Mes choix de conception</span></div>'+
+        '<ul class="r-list">'+
+          '<li><b>Responsive.</b> Vos utilisateurs sont des salariés terrain, souvent sur téléphone : l\'interface s\'adapte du mobile au bureau, sans rupture.</li>'+
+          '<li><b>4 questions, pas 14.</b> Chaque question en plus fait chuter la complétion. J\'ai gardé le strict nécessaire pour donner un résultat crédible.</li>'+
+          '<li><b>Une trajectoire, pas une liste.</b> La courbe qui s\'accumule sur 12 mois rend tangible un gain aujourd\'hui invisible. C\'est plus parlant qu\'un total sec.</li>'+
+          '<li><b>Une seule prochaine étape.</b> Plutôt qu\'afficher tous les droits d\'un coup, je surligne la première action à faire. C\'est là que se joue l\'aboutissement.</li>'+
+        '</ul></div>'+
+
+        '<div class="r-block"><div class="rh"><span class="num">03</span><span class="rt">Comment c\'est construit</span></div>'+
+        '<p>Un seul fichier, zéro dépendance, prototypé et déployé en autonomie en quelques heures. Je maîtrise la chaîne technique de bout en bout, ce qui me permet de dialoguer d\'égal à égal avec les développeurs et de trancher les bons arbitrages produit. Les données sont volontairement illustratives : l\'objectif est de démontrer une intention produit, pas de simuler vos barèmes réels.</p>'+
+        '<div class="stack"><span class="chip">Maîtrise technique</span><span class="chip">Claude Code &amp; Design</span><span class="chip">HTML / JS</span><span class="chip">Responsive</span><span class="chip">Déploiement autonome</span></div></div>'+
+
+        '<div class="r-block"><div class="rh"><span class="num">04</span><span class="rt">Ce que je ferais ensuite</span></div>'+
+        '<p>Avant de scaler, une vraie phase de discovery. <b>Quanti</b> : mesurer le taux de complétion question par question pour voir où le parcours décroche, et lire les signaux dans leur trajectoire plutôt que dans un niveau absolu. <b>Quali</b> : des entretiens utilisateurs et du shadowing terrain pour comprendre ce qui bloque vraiment au moment de la démarche, là où un dashboard ne dit rien. L\'idée : tester d\'abord l\'hypothèse la plus risquée, puis itérer en boucle construire-mesurer-apprendre.</p></div>'+
+
+        '<div class="note"><div class="nlab">Un mot</div>'+
+        '<p>Je ne viens ni du conseil ni d\'un grand groupe. Je viens de la startup et de la data, et ce que j\'aime, c\'est prendre un problème encore flou et en sortir vite quelque chose qu\'on peut tester. Votre mission, rendre accessible un droit que les gens ont déjà, est exactement le genre de problème sur lequel j\'ai envie de me lever le matin. Si cette manière de penser vous parle, j\'aimerais beaucoup en discuter.</p>'+
+        '<div class="sig">Noé</div></div>'+
+      '</div>';
+    document.getElementById('bk').onclick = ()=>{ renderResult(); window.scrollTo({top:0,behavior:'smooth'}); };
+  }
+
+  intro();
+})();
+
+</script>
+</body>
+</html>
